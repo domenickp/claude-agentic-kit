@@ -5,5 +5,6 @@
   "author": {
     "name": "domenickp"
   },
-  "repository": "https://github.com/domenickp/claude-agentic-kit"
+  "repository": "https://github.com/domenickp/claude-agentic-kit",
+  "license": "MIT"
 }

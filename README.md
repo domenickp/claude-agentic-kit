@@ -122,3 +122,7 @@ Each session: `git pull --rebase && bd import` → work → `git commit` (auto-e
 
 Edit, bump `version` in `.claude-plugin/plugin.json`, commit and push. Then run
 `/plugin update agentic-kit@domenickp-kit` (or `claude plugin update …`) on each machine.
+
+## License
+
+[MIT](LICENSE). Free to use and adapt, including commercially. Keep the copyright notice and license text in copies.
