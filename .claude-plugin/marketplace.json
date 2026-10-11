@@ -1,0 +1,16 @@
+{
+  "name": "domenickp-kit",
+  "owner": {
+    "name": "domenickp"
+  },
+  "metadata": {
+    "description": "domenickp's personal Claude Code kit: coordinator/builder agents and portable beads."
+  },
+  "plugins": [
+    {
+      "name": "agentic-kit",
+      "source": "./",
+      "description": "Coordinator/builder multi-agent workflow with portable bd (beads) issue tracking."
+    }
+  ]
+}
