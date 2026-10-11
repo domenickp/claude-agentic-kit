@@ -4,4 +4,6 @@
 # Shell hooks must be LF; CRLF gives "bad interpreter" on macOS and Linux
 .beads/hooks/* text eol=lf
 *.sh text eol=lf
+# JSON pinned to LF so generated files are byte-identical across OSes
+*.json text eol=lf
 # --- END PORTABLE BEADS (agentic-kit) ---

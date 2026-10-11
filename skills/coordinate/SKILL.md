@@ -51,9 +51,12 @@ builder starts, commit to the repo:
 - **File ownership**: which task owns which paths
 - **Conventions**: language/runtime versions, test commands, folder layout
 
-Put these in `docs/contracts.md` (or the language's natural home, such as a `types` file) and
-**commit them**. Worktree builders branch from your current HEAD, so uncommitted contracts are
-invisible to them. Small projects can put a short contract in each brief instead.
+Put these in `docs/contracts.md` (or the language's natural home, such as a `types` file),
+**commit them and push**. Worktree builders don't always branch from your local HEAD: in
+practice they were created from the last *pushed* commit, so unpushed contracts were missing
+until the builders noticed and merged `main` themselves. Push before dispatching, and say in
+each brief "if `docs/contracts.md` is missing, run `git merge --ff-only main` first". Small
+projects can put a short contract in each brief instead.
 
 ## 3. Write the brief
 
@@ -100,6 +103,11 @@ Use the Agent tool with the builder agent: `subagent_type: "builder"`, or
 `"agentic-kit:builder"` if it is listed under the plugin namespace. Check the available agent
 types in your context. Put the whole brief in `prompt`.
 
+If the builder agent isn't listed (for example, the plugin was installed after the session
+started), use `subagent_type: "general-purpose"` with `model: "sonnet"`, and start the prompt
+with: "Read your operating instructions from `<plugin root>/agents/builder.md`, ignore its
+frontmatter, and follow the body exactly." This behaves the same in practice.
+
 - **Sequential (default):** run in the main checkout. Use this when a task depends on another
   one, or when only one task is ready.
 - **Parallel:** for two or more *independent* ready tasks with disjoint file ownership, send
@@ -134,7 +142,16 @@ git worktree remove <path> && git branch -d <builder-branch>      # after mergin
 ```
 
 Merge parallel branches one at a time, rerunning the validation after each merge. Two
-correct branches can still break each other.
+correct branches can still break each other. After merging, run the **whole** test suite in
+the main checkout, not just each builder's file. Line-ending conversion (Windows
+`core.autocrlf`) and test-runner globs only show up there.
+
+Don't use `git add -A` while builder worktrees exist under `.claude/worktrees/`. It commits
+them as embedded repos. Make sure `.claude/worktrees/` is gitignored (`beads-init.sh` does this).
+
+Write the cross-module checks yourself: a small integration test proving that pieces from
+different builders agree on real data (shared ids, formats, validation). No single builder owns
+that seam.
 
 ## 7. Close the session
 
