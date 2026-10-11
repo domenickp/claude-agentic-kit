@@ -13,20 +13,90 @@ machines through git.
 | `scripts/beads-clone-setup.sh` | Sets up bd on a fresh clone / new machine. Idempotent. |
 | `templates/` | AGENTS.md, CLAUDE.md, `.claude/settings.json`, gitignore/gitattributes blocks, and the pre-commit export block. |
 
-## Set up a machine (once per machine)
+## First-time setup (once per machine)
 
-1. Install the prerequisites: **git**, **bd** (beads, verified with 0.61), **Node.js** (for
-   project tooling such as clasp), and optionally **gh** (GitHub CLI). On Windows, use the
-   Git Bash that ships with git to run the scripts.
-2. Install the plugin in Claude Code:
+You need **git**, **Node.js**, **bd** (beads), **Claude Code**, and optionally **gh** (the
+GitHub CLI, used to create repos). The kit was built and tested with **bd 0.61**.
+
+### Windows 11
+
+Run these in **PowerShell**:
+
+```powershell
+winget install --id Git.Git -e            # includes Git Bash, which runs the kit's scripts
+winget install --id OpenJS.NodeJS.LTS -e
+winget install --id GitHub.cli -e
+irm https://raw.githubusercontent.com/gastownhall/beads/main/install.ps1 | iex   # bd
+irm https://claude.ai/install.ps1 | iex                                           # Claude Code
+```
+
+Then **open a new terminal** so the PATH changes take effect, and check everything:
+
+```powershell
+git --version; node --version; gh --version; bd version; claude --version
+gh auth login
+```
+
+Notes:
+- The kit's scripts are POSIX shell. Run them from **Git Bash** (`sh scripts/…`), not from
+  PowerShell or cmd.
+- If `bd init` reports that it can't find or start Dolt, install it (`scoop install dolt`, or
+  the MSI from https://github.com/dolthub/dolt/releases) and open a new terminal.
+- If a Windows firewall prompt appears for `bd.exe` or `dolt.exe`, allow it. bd talks to its
+  database over a local loopback port.
+
+### macOS
+
+Install [Homebrew](https://brew.sh) if you don't have it, then:
+
+```bash
+xcode-select --install          # git and command-line tools (skip if already installed)
+brew install node gh beads
+curl -fsSL https://claude.ai/install.sh | bash      # Claude Code
+git --version; node --version; gh --version; bd version; claude --version
+gh auth login
+```
+
+### Linux
+
+Debian/Ubuntu shown. On other distros, use the equivalent package manager for git and Node.js.
+
+```bash
+sudo apt update && sudo apt install -y git curl
+# Node.js LTS via nvm (or your distro's package, if it's v20+)
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+. ~/.nvm/nvm.sh && nvm install --lts
+# GitHub CLI: follow https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash   # bd
+curl -fsSL https://claude.ai/install.sh | bash                                                 # Claude Code
+git --version; node --version; gh --version; bd version; claude --version
+gh auth login
+```
+
+If you use Homebrew on Linux, `brew install node gh beads` covers three of these.
+
+### All platforms: install the plugin and get the scripts
+
+1. Install the plugin, either from inside a Claude Code session:
    ```
    /plugin marketplace add domenickp/claude-agentic-kit
    /plugin install agentic-kit@domenickp-kit
    ```
-   or from a shell: `claude plugin marketplace add domenickp/claude-agentic-kit && claude plugin install agentic-kit@domenickp-kit`.
-   The repo is private, so the machine needs GitHub access (`gh auth login`, or git credentials).
-3. Optional: also clone this repo somewhere stable (for example `~/claude-agentic-kit`) to run
-   the scripts by hand outside Claude.
+   or from a terminal:
+   ```bash
+   claude plugin marketplace add domenickp/claude-agentic-kit
+   claude plugin install agentic-kit@domenickp-kit
+   ```
+   Restart Claude Code afterwards. The `builder` agent and the skills load when a session starts.
+2. Clone this repo somewhere stable so the setup scripts are easy to run by hand:
+   ```bash
+   git clone https://github.com/domenickp/claude-agentic-kit.git ~/claude-agentic-kit
+   ```
+3. Set your git identity if you haven't already, because the scripts make commits:
+   ```bash
+   git config --global user.name "Your Name"
+   git config --global user.email "you@example.com"
+   ```
 
 ## Start a new project
 
@@ -47,13 +117,6 @@ sh ~/claude-agentic-kit/scripts/beads-clone-setup.sh
 ```
 
 Each session: `git pull --rebase && bd import` → work → `git commit` (auto-exports issues) → `git push`.
-
-## Verified behaviour (bd 0.61, Windows / Git Bash)
-
-- A fresh clone reproduces the full issue list: ids, statuses, priorities and dependencies.
-- Changes made on the clone come back through `git pull` + `bd import`.
-- `bd init`'s credential key is removed from history before the first push.
-- Commits in linked worktrees (builder branches) don't touch `.beads/issues.jsonl`.
 
 ## Updating the kit
 
