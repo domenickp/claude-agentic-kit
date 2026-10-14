@@ -19,7 +19,7 @@ skill's base directory. Below, `<kit>` means the plugin root.
 |---|---|
 | New project, bd never set up | `sh <kit>/scripts/beads-init.sh <prefix> [name]`, then fill in the project sections of `AGENTS.md` |
 | Existing portable-beads repo, new machine or fresh clone | `git clone …`, then `sh <kit>/scripts/beads-clone-setup.sh` |
-| Starting a session | `git pull --rebase && bd import`, then `bd ready` |
+| Starting a session | export + commit any uncommitted issue changes, then `git pull --rebase && bd import`, then `bd ready` |
 | Ending a session | see *Session end* below |
 | Issues look stale or missing | `bd import`, then compare `bd list --all --json` with `.beads/issues.jsonl` |
 | Repo has bd but no `issues.jsonl` and no export hook | run `beads-init.sh`. It skips `bd init` when `.beads/` exists and only adds the missing pieces |
@@ -69,9 +69,16 @@ issue list, with open/in_progress/closed statuses intact.
 
 ```bash
 git pull --rebase
-bd import      # NOT automatic; bd's post-merge hook can't be relied on. Upserts, so always safe.
+bd import      # NOT automatic; bd's post-merge hook can't be relied on.
 bd ready --json
 ```
+
+**Export before you import.** `bd import` makes the database match the JSONL, so any issue
+change made since the last commit (a `bd close`, `bd update`, `--claim`) is silently reverted
+to the file's older state. Found in practice: an issue closed after verification was reopened
+by the `bd import` that followed a `git pull`. Whenever the database may be ahead of the file,
+run `bd export -o .beads/issues.jsonl` and commit first. `bd import` is only harmless when
+the database has no unexported changes.
 
 ## Session end ("landing the plane")
 
@@ -80,8 +87,8 @@ bd ready --json
 3. Close or update issues.
 4. Sync and push:
    ```bash
-   git pull --rebase && bd import
-   git add -A && git commit -m "..."   # hook exports + stages issues.jsonl
+   git add -A && git commit -m "..."   # hook exports + stages issues.jsonl FIRST
+   git pull --rebase && bd import       # safe now: the JSONL already holds your changes
    git push
    git status                           # must say "up to date with origin"
    ```

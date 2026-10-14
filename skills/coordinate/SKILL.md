@@ -23,6 +23,12 @@ session with that skill's session-start routine.
   in the brief or committed to the repo before you dispatch.
 - **Is it worth it?** If the whole job is a single small change, do it yourself. Builders pay
   off when tasks are separable and each one is big enough to be worth writing a brief for.
+  **But the project's `AGENTS.md` wins:** if it says all code changes go through builders,
+  dispatch a builder even for a small change.
+- **This skill only runs when asked.** Agents default to editing directly and don't spawn
+  subagents unless told to. For builders to be the default, the project's `AGENTS.md` must
+  say so as a standing instruction (the kit's template does). Without it, sessions quietly
+  skip the workflow.
 
 ## 1. Decompose into bd issues
 
@@ -156,7 +162,9 @@ that seam.
 ## 7. Close the session
 
 Follow the `beads-portable` skill's session-end routine (commit, which exports
-`issues.jsonl`, then push). Leave the next coordinator a short handoff: what's done, what's
+`issues.jsonl`, then pull + import, then push). Never `bd import` while you have issue
+changes that aren't committed to `issues.jsonl` yet: the import reverts them, including the
+closes you just made after verification. Leave the next coordinator a short handoff: what's done, what's
 in progress, and the next ready issue.
 
 ## Scaling to larger projects

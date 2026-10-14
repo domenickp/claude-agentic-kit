@@ -116,7 +116,8 @@ git clone <repo-url> && cd <repo>
 sh ~/claude-agentic-kit/scripts/beads-clone-setup.sh
 ```
 
-Each session: `git pull --rebase && bd import` → work → `git commit` (auto-exports issues) → `git push`.
+Each session: `git pull --rebase && bd import` → work → `git commit` (auto-exports issues) → `git pull --rebase && bd import` → `git push`.
+Always commit (export) issue changes **before** a pull + import, or the import reverts them.
 
 ## Updating the kit
 
